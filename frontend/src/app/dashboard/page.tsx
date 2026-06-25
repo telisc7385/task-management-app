@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navbar from '@/components/Navbar';
@@ -21,6 +21,8 @@ export default function DashboardPage() {
   const [error, setError] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -50,7 +52,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, searchQuery, page]);
+  }, [statusFilter, debouncedSearch, page]);
 
   const fetchStats = useCallback(async () => {
     setStatsLoading(true);
@@ -74,7 +76,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [statusFilter, searchQuery]);
+  }, [statusFilter, debouncedSearch]);
 
   const handleDelete = async () => {
     if (!deleteId) return;
@@ -93,6 +95,10 @@ export default function DashboardPage() {
 
   const handleSearch = (value: string) => {
     setSearchQuery(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(value);
+    }, 400);
   };
 
   return (
