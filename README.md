@@ -1,24 +1,22 @@
-# Task Management Application
+# Full Stack Application Suite
 
-A full-stack task management application built with Next.js, Express.js, TypeScript, and PostgreSQL.
+A full-stack application suite with **Task Manager** and **Job Application Manager**, built with Next.js 15, Express.js, TypeScript, and PostgreSQL.
 
-## Features
+---
 
-- **Authentication**: User registration and login with JWT-based authentication
-- **Task Management**: Create, read, update, and delete tasks
-- **Dashboard**: Overview with task statistics (total, pending, in-progress, completed)
-- **Filtering**: Filter tasks by status (All, Pending, In Progress, Completed)
-- **Search**: Search tasks by title or description
-- **Pagination**: Paginated task listing
-- **Responsive UI**: Mobile-first design with Tailwind CSS
-- **Security**: Password hashing with bcryptjs, request validation, protected routes
-- **State Management**: Auth state via React Context API
-- **Error Handling**: Global error handler with standardized API responses
+## Applications
+
+### 1. Task Manager
+Manage personal tasks with CRUD operations, filtering, search, and pagination.
+
+### 2. Job Application Manager
+Manage and send job applications via email with CSV import, resume upload, and WhatsApp integration.
+
+---
 
 ## Tech Stack
 
 ### Frontend
-
 - Next.js 15 (App Router)
 - TypeScript
 - Tailwind CSS
@@ -27,24 +25,22 @@ A full-stack task management application built with Next.js, Express.js, TypeScr
 - Context API
 
 ### Backend
-
-- Node.js
-- Express.js
+- Node.js / Express.js
 - TypeScript
-- PostgreSQL
-- Prisma ORM
-- JWT Authentication
-- bcryptjs
-- express-validator
-- Helmet
-- CORS
+- PostgreSQL + Prisma ORM
+- JWT Authentication + bcryptjs
+- Nodemailer (Gmail SMTP)
+- Multer (file uploads)
+- csv-parser
+- express-validator, Helmet, CORS
+
+---
 
 ## Project Structure
 
 ```
 ├── backend/
-│   ├── prisma/
-│   │   └── schema.prisma
+│   ├── prisma/schema.prisma
 │   ├── src/
 │   │   ├── controllers/
 │   │   ├── middleware/
@@ -54,140 +50,183 @@ A full-stack task management application built with Next.js, Express.js, TypeScr
 │   │   ├── types/
 │   │   ├── utils/
 │   │   └── server.ts
+│   ├── uploads/          # Resume storage
 │   ├── .env
-│   ├── package.json
-│   └── tsconfig.json
+│   └── package.json
 ├── frontend/
 │   ├── src/
 │   │   ├── app/
 │   │   │   ├── login/
 │   │   │   ├── register/
 │   │   │   ├── dashboard/
-│   │   │   └── tasks/
+│   │   │   ├── tasks/
+│   │   │   ├── admin/login/
+│   │   │   └── jobs/
 │   │   ├── components/
 │   │   ├── context/
 │   │   ├── lib/
 │   │   └── types/
-│   ├── package.json
-│   └── tailwind.config.ts
+│   ├── .env.local
+│   └── package.json
 └── README.md
 ```
+
+---
 
 ## Installation
 
 ### Prerequisites
-
 - Node.js 18+
 - PostgreSQL
 - npm
 
 ### Backend Setup
-
 ```bash
 cd backend
 npm install
 cp .env.example .env
-# Update .env with your database credentials
+# Edit .env with your credentials
 npx prisma migrate dev --name init
 npm run dev
 ```
 
 ### Frontend Setup
-
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-The backend runs on `http://localhost:5000` and the frontend on `http://localhost:3000`.
+Backend: `http://localhost:5000`  
+Frontend: `http://localhost:3000`
+
+---
 
 ## Environment Variables
 
 ### Backend (.env)
-
-| Variable     | Description                  | Default                                      |
-| ------------ | ---------------------------- | -------------------------------------------- |
-| DATABASE_URL | PostgreSQL connection string | postgresql://user:pass@localhost:5432/dbname |
-| JWT_SECRET   | Secret key for JWT signing   | (required)                                   |
-| PORT         | Server port                  | 5000                                         |
+| Variable       | Description                     |
+|---------------|---------------------------------|
+| DATABASE_URL  | PostgreSQL connection string    |
+| JWT_SECRET    | Secret key for JWT signing      |
+| PORT          | Server port (default: 5000)     |
+| ADMIN_EMAIL   | Admin login email               |
+| ADMIN_PASSWORD| Admin login password            |
+| SMTP_HOST     | SMTP server (smtp.gmail.com)    |
+| SMTP_PORT     | SMTP port (587)                 |
+| SMTP_USER     | Gmail address                   |
+| SMTP_PASS     | Gmail App Password              |
 
 ### Frontend (.env.local)
+| Variable            | Description          |
+|-------------------|----------------------|
+| NEXT_PUBLIC_API_URL | http://localhost:5000/api |
 
-| Variable            | Description          | Default                         |
-| ------------------- | -------------------- | ------------------------------- |
-| NEXT_PUBLIC_API_URL | Backend API base URL | http://localhost:5000/api |
+---
+
+## Gmail App Password Setup
+
+1. Go to https://myaccount.google.com/security
+2. Enable **2-Step Verification**
+3. Go to **App Passwords** (search in Google Account settings)
+4. Select **Mail** and your device, generate a 16-character password
+5. Use this password as `SMTP_PASS` in `.env`
+
+---
 
 ## API Endpoints
 
-### Health Check
-
+### Health
 ```
 GET /api/health
 ```
 
-### Authentication
-
+### Auth (Task Manager)
 ```
-POST /api/auth/register
-Body: { "name": "John", "email": "john@example.com", "password": "123456" }
-Response: { "success": true, "message": "User registered successfully" }
+POST /api/auth/register   { name, email, password }
+POST /api/auth/login      { email, password }
 ```
 
+### Tasks (Bearer Token required)
 ```
-POST /api/auth/login
-Body: { "email": "john@example.com", "password": "123456" }
-Response: { "success": true, "data": { "token": "jwt...", "user": { "id": 1, "name": "John", "email": "john@example.com" } } }
-```
-
-### Tasks (Requires Bearer Token)
-
-```
-GET /api/tasks
-Query: ?status=Pending&search=keyword&page=1&limit=10
-Response: { "success": true, "data": [...], "meta": { "page": 1, "limit": 10, "total": 5, "totalPages": 1 } }
-```
-
-```
-GET /api/tasks/stats
-Response: { "success": true, "data": { "total": 10, "pending": 3, "inProgress": 4, "completed": 3 } }
-```
-
-```
-GET /api/tasks/:id
-Response: { "success": true, "data": { "id": 1, "title": "...", "description": "...", "status": "Pending", ... } }
-```
-
-```
-POST /api/tasks
-Body: { "title": "Build API", "description": "Create Express API", "status": "Pending" }
-Response: { "success": true, "data": { ... }, "message": "Task created successfully" }
-```
-
-```
-PUT /api/tasks/:id
-Body: { "title": "...", "description": "...", "status": "In Progress" }
-Response: { "success": true, "data": { ... }, "message": "Task updated successfully" }
-```
-
-```
+GET    /api/tasks          ?status=&search=&page=&limit=
+GET    /api/tasks/stats
+GET    /api/tasks/:id
+POST   /api/tasks          { title, description, status }
+PUT    /api/tasks/:id      { title, description, status }
 DELETE /api/tasks/:id
-Response: { "success": true, "message": "Task deleted successfully" }
 ```
+
+### Admin Auth (Job Manager)
+```
+POST /api/admin/login      { email, password }
+```
+
+### Jobs (Admin Token required)
+```
+GET    /api/jobs           ?search=&emailStatus=&page=&limit=
+GET    /api/jobs/stats
+GET    /api/jobs/:id
+POST   /api/jobs           { companyName, role, hrName, email, phone?, location? }
+PUT    /api/jobs/:id       { companyName, role, hrName, email, phone?, location?, notes? }
+DELETE /api/jobs/:id
+POST   /api/jobs/import    (multipart/form-data with CSV file)
+```
+
+### Email (Admin Token required)
+```
+POST /api/email/send/:jobId
+```
+
+### Templates (Admin Token required)
+```
+GET  /api/template/email
+PUT  /api/template/email      { subject, body }
+GET  /api/template/whatsapp
+PUT  /api/template/whatsapp   { body }
+```
+
+### Resume (Admin Token required)
+```
+GET  /api/resume
+POST /api/resume/upload       (multipart/form-data with PDF)
+```
+
+---
+
+## CSV Import Format
+
+The CSV file must have these columns:
+
+```csv
+companyName,role,hrName,email,phone,location
+Google,Software Engineer,John Doe,john@google.com,+1 234 567 890,Mountain View CA
+```
+
+Duplicate email addresses are skipped. Import summary shows imported/skipped counts.
+
+---
 
 ## Architecture
 
-The backend follows a layered architecture:
+### Backend
+- **Controllers** — HTTP request handling
+- **Services** — Business logic
+- **Repositories** — Prisma data access
+- **Middleware** — Auth, validation, error handling
+- **Utils** — API responses, custom errors
 
-- **Controllers**: Handle HTTP requests and responses
-- **Services**: Business logic layer
-- **Repositories**: Data access layer using Prisma ORM
-- **Middleware**: Authentication, validation, and error handling
-- **Utils**: Shared utilities, custom errors, and API response helpers
+### Frontend
+- **Context API** — Auth state management
+- **Components** — Reusable UI
+- **Lib** — Axios API client with interceptors
+- **App Router** — File-based routing with protected routes
 
-The frontend uses:
+---
 
-- **Context API**: Auth state management
-- **Components**: Reusable UI components
-- **Lib**: API client with Axios interceptors
-- **App Router**: Next.js 15 file-based routing with protected routes
+## Placeholders
+
+Available for email and WhatsApp templates:
+- `{company}` — Company name
+- `{role}` — Job role
+- `{hrName}` — HR contact name

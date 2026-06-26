@@ -19,6 +19,12 @@ export default function Navbar() {
             <span className="text-lg font-bold text-slate-800">TaskFlow</span>
           </Link>
           <div className="flex items-center gap-3">
+            <Link
+              href="/jobs"
+              className="text-sm text-slate-500 hover:text-emerald-600 transition-colors"
+            >
+              Job Manager
+            </Link>
             <span className="text-sm text-slate-500 hidden sm:block">
               {user?.name}
             </span>

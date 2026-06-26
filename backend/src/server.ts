@@ -4,6 +4,11 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes';
 import taskRoutes from './routes/taskRoutes';
+import adminAuthRoutes from './routes/adminAuthRoutes';
+import jobRoutes from './routes/jobRoutes';
+import emailRoutes from './routes/emailRoutes';
+import templateRoutes from './routes/templateRoutes';
+import resumeRoutes from './routes/resumeRoutes';
 import { errorHandler } from './middleware/errorHandler';
 
 dotenv.config();
@@ -21,6 +26,11 @@ app.get('/api/health', (_req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/admin', adminAuthRoutes);
+app.use('/api/jobs', jobRoutes);
+app.use('/api/email', emailRoutes);
+app.use('/api/template', templateRoutes);
+app.use('/api/resume', resumeRoutes);
 
 app.use(errorHandler);
 

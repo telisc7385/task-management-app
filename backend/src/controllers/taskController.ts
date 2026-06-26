@@ -12,13 +12,16 @@ export const getAllTasks = async (
 ): Promise<void> => {
   try {
     const userId = req.user!.userId;
-    const { status, search, page, limit } = req.query;
+    const status = req.query.status as string | undefined;
+    const search = req.query.search as string | undefined;
+    const pageStr = req.query.page as string | undefined;
+    const limitStr = req.query.limit as string | undefined;
 
     const result = await taskService.getAll(userId, {
-      status: status as string,
-      search: search as string,
-      page: page ? parseInt(page as string, 10) : undefined,
-      limit: limit ? parseInt(limit as string, 10) : undefined,
+      status,
+      search,
+      page: pageStr ? parseInt(pageStr, 10) : undefined,
+      limit: limitStr ? parseInt(limitStr, 10) : undefined,
     });
 
     sendSuccess(res, result.tasks, 'Tasks fetched successfully', 200, {
@@ -39,7 +42,7 @@ export const getTaskById = async (
 ): Promise<void> => {
   try {
     const userId = req.user!.userId;
-    const id = parseInt(req.params.id, 10);
+    const id = parseInt(req.params.id as string, 10);
     const task = await taskService.getById(id, userId);
     sendSuccess(res, task, 'Task fetched successfully');
   } catch (error) {
@@ -68,7 +71,7 @@ export const updateTask = async (
 ): Promise<void> => {
   try {
     const userId = req.user!.userId;
-    const id = parseInt(req.params.id, 10);
+    const id = parseInt(req.params.id as string, 10);
     const task = await taskService.update(id, userId, req.body);
     sendSuccess(res, task, 'Task updated successfully');
   } catch (error) {
@@ -83,7 +86,7 @@ export const deleteTask = async (
 ): Promise<void> => {
   try {
     const userId = req.user!.userId;
-    const id = parseInt(req.params.id, 10);
+    const id = parseInt(req.params.id as string, 10);
     await taskService.delete(id, userId);
     sendSuccess(res, undefined, 'Task deleted successfully');
   } catch (error) {
