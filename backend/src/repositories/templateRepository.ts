@@ -8,27 +8,43 @@ export class TemplateRepository {
     this.prisma = prisma;
   }
 
-  async getEmailTemplate() {
-    return this.prisma.emailTemplate.findFirst({ orderBy: { id: 'asc' } });
+  async listEmailTemplates() {
+    return this.prisma.emailTemplate.findMany({ orderBy: { id: 'asc' } });
   }
 
-  async upsertEmailTemplate(subject: string, body: string) {
-    const existing = await this.getEmailTemplate();
-    if (existing) {
-      return this.prisma.emailTemplate.update({ where: { id: existing.id }, data: { subject, body } });
-    }
-    return this.prisma.emailTemplate.create({ data: { subject, body } });
+  async getEmailTemplateById(id: number) {
+    return this.prisma.emailTemplate.findUnique({ where: { id } });
   }
 
-  async getWhatsappTemplate() {
-    return this.prisma.whatsappTemplate.findFirst({ orderBy: { id: 'asc' } });
+  async createEmailTemplate(data: { name: string; subject: string; body: string }) {
+    return this.prisma.emailTemplate.create({ data });
   }
 
-  async upsertWhatsappTemplate(body: string) {
-    const existing = await this.getWhatsappTemplate();
-    if (existing) {
-      return this.prisma.whatsappTemplate.update({ where: { id: existing.id }, data: { body } });
-    }
-    return this.prisma.whatsappTemplate.create({ data: { body } });
+  async updateEmailTemplate(id: number, data: { name?: string; subject?: string; body?: string }) {
+    return this.prisma.emailTemplate.update({ where: { id }, data });
+  }
+
+  async deleteEmailTemplate(id: number) {
+    return this.prisma.emailTemplate.delete({ where: { id } });
+  }
+
+  async listWhatsappTemplates() {
+    return this.prisma.whatsappTemplate.findMany({ orderBy: { id: 'asc' } });
+  }
+
+  async getWhatsappTemplateById(id: number) {
+    return this.prisma.whatsappTemplate.findUnique({ where: { id } });
+  }
+
+  async createWhatsappTemplate(data: { name: string; body: string }) {
+    return this.prisma.whatsappTemplate.create({ data });
+  }
+
+  async updateWhatsappTemplate(id: number, data: { name?: string; body?: string }) {
+    return this.prisma.whatsappTemplate.update({ where: { id }, data });
+  }
+
+  async deleteWhatsappTemplate(id: number) {
+    return this.prisma.whatsappTemplate.delete({ where: { id } });
   }
 }

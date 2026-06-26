@@ -32,6 +32,10 @@ export class JobRepository {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
+        include: {
+          emailTemplate: true,
+          whatsappTemplate: true,
+        },
       }),
       this.prisma.job.count({ where }),
     ]);
@@ -40,7 +44,13 @@ export class JobRepository {
   }
 
   async findById(id: number) {
-    return this.prisma.job.findUnique({ where: { id } });
+    return this.prisma.job.findUnique({
+      where: { id },
+      include: {
+        emailTemplate: true,
+        whatsappTemplate: true,
+      },
+    });
   }
 
   async findByEmail(email: string) {
@@ -55,6 +65,8 @@ export class JobRepository {
     phone?: string;
     location?: string;
     resumeFileName?: string;
+    emailTemplateId?: number;
+    whatsappTemplateId?: number;
   }) {
     return this.prisma.job.create({ data });
   }
@@ -72,6 +84,8 @@ export class JobRepository {
       whatsappStatus?: string;
       notes?: string;
       resumeFileName?: string;
+      emailTemplateId?: number | null;
+      whatsappTemplateId?: number | null;
     }
   ) {
     return this.prisma.job.update({ where: { id }, data });

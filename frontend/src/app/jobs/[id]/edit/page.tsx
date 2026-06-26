@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
-import { jobApi, resumeApi } from '@/lib/api';
-import { JobFormData, ResumeFile } from '@/types';
+import { jobApi, resumeApi, templateApi } from '@/lib/api';
+import { JobFormData, ResumeFile, EmailTemplate, WhatsappTemplate } from '@/types';
 
 export default function EditJobPage() {
   const router = useRouter();
@@ -15,18 +15,24 @@ export default function EditJobPage() {
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [resumes, setResumes] = useState<ResumeFile[]>([]);
+  const [emailTemplates, setEmailTemplates] = useState<EmailTemplate[]>([]);
+  const [whatsappTemplates, setWhatsappTemplates] = useState<WhatsappTemplate[]>([]);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<JobFormData>();
 
   useEffect(() => {
-    const fetchJob = async () => {
+    const fetchData = async () => {
       try {
-        const [jobResponse, resumeResponse] = await Promise.all([
+        const [jobResponse, resumeResponse, emailRes, whatsappRes] = await Promise.all([
           jobApi.getById(id),
           resumeApi.list(),
+          templateApi.listEmail(),
+          templateApi.listWhatsapp(),
         ]);
         const job = jobResponse.data.data!;
         setResumes(resumeResponse.data.data || []);
+        setEmailTemplates(emailRes.data.data || []);
+        setWhatsappTemplates(whatsappRes.data.data || []);
         reset({
           companyName: job.companyName,
           role: job.role,
@@ -36,6 +42,8 @@ export default function EditJobPage() {
           location: job.location || '',
           notes: job.notes || '',
           resumeFileName: job.resumeFileName || '',
+          emailTemplateId: job.emailTemplateId,
+          whatsappTemplateId: job.whatsappTemplateId,
         });
       } catch {
         setError('Job not found');
@@ -43,14 +51,19 @@ export default function EditJobPage() {
         setFetchLoading(false);
       }
     };
-    fetchJob();
+    fetchData();
   }, [id, reset]);
 
   const onSubmit = async (data: JobFormData) => {
     setError('');
     setLoading(true);
     try {
-      await jobApi.update(id, data);
+      const payload = {
+        ...data,
+        emailTemplateId: data.emailTemplateId || null,
+        whatsappTemplateId: data.whatsappTemplateId || null,
+      };
+      await jobApi.update(id, payload);
       router.push('/jobs');
     } catch (err: unknown) {
       const axiosError = err as { response?: { data?: { message?: string } } };
@@ -124,6 +137,29 @@ export default function EditJobPage() {
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 focus:bg-white transition-all text-slate-900 placeholder-slate-400" />
             </div>
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Email Template</label>
+            <select {...register('emailTemplateId', { setValueAs: (v: string) => v ? parseInt(v, 10) : null })}
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 focus:bg-white transition-all text-slate-900">
+              <option value="">Default (first template)</option>
+              {emailTemplates.map((t) => (
+                <option key={t.id} value={t.id!}>{t.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">WhatsApp Template</label>
+            <select {...register('whatsappTemplateId', { setValueAs: (v: string) => v ? parseInt(v, 10) : null })}
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 focus:bg-white transition-all text-slate-900">
+              <option value="">Default (first template)</option>
+              {whatsappTemplates.map((t) => (
+                <option key={t.id} value={t.id!}>{t.name}</option>
+              ))}
+            </select>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Resume</label>
             <select {...register('resumeFileName')}
@@ -134,6 +170,7 @@ export default function EditJobPage() {
               ))}
             </select>
           </div>
+
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Notes</label>
             <textarea {...register('notes')} rows={3}

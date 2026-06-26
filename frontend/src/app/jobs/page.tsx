@@ -107,7 +107,13 @@ export default function JobsDashboardPage() {
 
   const handleOpenWhatsapp = (job: Job) => {
     if (!job.phone) { setError('No phone number available'); return; }
-    const templateBody = `Hi ${job.hrName},\n\nI am interested in the ${job.role} position at ${job.companyName}.`;
+    let templateBody = `Hi ${job.hrName},\n\nI am interested in the ${job.role} position at ${job.companyName}.`;
+    if (job.whatsappTemplate?.body) {
+      templateBody = job.whatsappTemplate.body
+        .replace(/\{company\}/g, job.companyName)
+        .replace(/\{role\}/g, job.role)
+        .replace(/\{hrName\}/g, job.hrName);
+    }
     window.open(`https://wa.me/${job.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(templateBody)}`, '_blank');
   };
 
@@ -292,6 +298,7 @@ export default function JobsDashboardPage() {
                       <th className="text-left px-4 py-3 font-medium text-slate-600">Role</th>
                       <th className="text-left px-4 py-3 font-medium text-slate-600 hidden md:table-cell">HR Name</th>
                       <th className="text-left px-4 py-3 font-medium text-slate-600 hidden lg:table-cell">Email</th>
+                      <th className="text-left px-4 py-3 font-medium text-slate-600">Template</th>
                       <th className="text-left px-4 py-3 font-medium text-slate-600">Email Status</th>
                       <th className="text-left px-4 py-3 font-medium text-slate-600 hidden sm:table-cell">Resume</th>
                       <th className="text-right px-4 py-3 font-medium text-slate-600">Actions</th>
@@ -304,6 +311,11 @@ export default function JobsDashboardPage() {
                         <td className="px-4 py-3 text-slate-600">{job.role}</td>
                         <td className="px-4 py-3 text-slate-600 hidden md:table-cell">{job.hrName}</td>
                         <td className="px-4 py-3 text-slate-600 hidden lg:table-cell truncate max-w-[180px]">{job.email}</td>
+                        <td className="px-4 py-3">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200">
+                            {job.emailTemplate?.name || 'Default'}
+                          </span>
+                        </td>
                         <td className="px-4 py-3">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${emailStatusBadge(job.emailStatus)}`}>{job.emailStatus}</span>
                         </td>

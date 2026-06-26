@@ -1,21 +1,37 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
-import { jobApi } from '@/lib/api';
-import { JobFormData } from '@/types';
+import { jobApi, templateApi } from '@/lib/api';
+import { JobFormData, EmailTemplate, WhatsappTemplate } from '@/types';
 
 export default function CreateJobPage() {
   const router = useRouter();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailTemplates, setEmailTemplates] = useState<EmailTemplate[]>([]);
+  const [whatsappTemplates, setWhatsappTemplates] = useState<WhatsappTemplate[]>([]);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<JobFormData>();
+
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      try {
+        const [emailRes, whatsappRes] = await Promise.all([
+          templateApi.listEmail(),
+          templateApi.listWhatsapp(),
+        ]);
+        setEmailTemplates(emailRes.data.data || []);
+        setWhatsappTemplates(whatsappRes.data.data || []);
+      } catch { /* ignore */ }
+    };
+    fetchTemplates();
+  }, []);
 
   const onSubmit = async (data: JobFormData) => {
     setError('');
@@ -93,6 +109,29 @@ export default function CreateJobPage() {
                 placeholder="Mountain View, CA" />
             </div>
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Email Template</label>
+            <select {...register('emailTemplateId', { setValueAs: (v: string) => v ? parseInt(v, 10) : null })}
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 focus:bg-white transition-all text-slate-900">
+              <option value="">Default (first template)</option>
+              {emailTemplates.map((t) => (
+                <option key={t.id} value={t.id!}>{t.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">WhatsApp Template</label>
+            <select {...register('whatsappTemplateId', { setValueAs: (v: string) => v ? parseInt(v, 10) : null })}
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 focus:bg-white transition-all text-slate-900">
+              <option value="">Default (first template)</option>
+              {whatsappTemplates.map((t) => (
+                <option key={t.id} value={t.id!}>{t.name}</option>
+              ))}
+            </select>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Notes</label>
             <textarea {...register('notes')} rows={3}

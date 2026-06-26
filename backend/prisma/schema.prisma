@@ -28,28 +28,36 @@ model Task {
 }
 
 model Job {
-  id              Int      @id @default(autoincrement())
-  companyName     String
-  role            String
-  hrName          String
-  email           String   @unique
-  phone           String?
-  location        String?
-  emailStatus     String   @default("Pending")
-  whatsappStatus  String   @default("Pending")
-  notes           String?
-  resumeFileName  String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                  Int              @id @default(autoincrement())
+  companyName         String
+  role                String
+  hrName              String
+  email               String           @unique
+  phone               String?
+  location            String?
+  emailStatus         String           @default("Pending")
+  whatsappStatus      String           @default("Pending")
+  notes               String?
+  resumeFileName      String?
+  emailTemplateId     Int?
+  whatsappTemplateId  Int?
+  emailTemplate       EmailTemplate?   @relation(fields: [emailTemplateId], references: [id])
+  whatsappTemplate    WhatsappTemplate? @relation(fields: [whatsappTemplateId], references: [id])
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
 }
 
 model EmailTemplate {
   id      Int    @id @default(autoincrement())
+  name    String @default("Default")
   subject String
   body    String
+  jobs    Job[]
 }
 
 model WhatsappTemplate {
   id   Int    @id @default(autoincrement())
+  name String @default("Default")
   body String
+  jobs Job[]
 }

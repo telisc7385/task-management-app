@@ -138,17 +138,35 @@ export const emailApi = {
 };
 
 export const templateApi = {
-  getEmail: () =>
-    adminApiInstance.get<ApiResponse<EmailTemplate>>('/template/email'),
+  listEmail: () =>
+    adminApiInstance.get<ApiResponse<EmailTemplate[]>>('/template/email'),
 
-  updateEmail: (data: { subject: string; body: string }) =>
-    adminApiInstance.put<ApiResponse<EmailTemplate>>('/template/email', data),
+  getEmail: (id: number) =>
+    adminApiInstance.get<ApiResponse<EmailTemplate>>(`/template/email/${id}`),
 
-  getWhatsapp: () =>
-    adminApiInstance.get<ApiResponse<WhatsappTemplate>>('/template/whatsapp'),
+  createEmail: (data: { name: string; subject: string; body: string }) =>
+    adminApiInstance.post<ApiResponse<EmailTemplate>>('/template/email', data),
 
-  updateWhatsapp: (data: { body: string }) =>
-    adminApiInstance.put<ApiResponse<WhatsappTemplate>>('/template/whatsapp', data),
+  updateEmail: (id: number, data: { name?: string; subject?: string; body?: string }) =>
+    adminApiInstance.put<ApiResponse<EmailTemplate>>(`/template/email/${id}`, data),
+
+  deleteEmail: (id: number) =>
+    adminApiInstance.delete<ApiResponse<void>>(`/template/email/${id}`),
+
+  listWhatsapp: () =>
+    adminApiInstance.get<ApiResponse<WhatsappTemplate[]>>('/template/whatsapp'),
+
+  getWhatsapp: (id: number) =>
+    adminApiInstance.get<ApiResponse<WhatsappTemplate>>(`/template/whatsapp/${id}`),
+
+  createWhatsapp: (data: { name: string; body: string }) =>
+    adminApiInstance.post<ApiResponse<WhatsappTemplate>>('/template/whatsapp', data),
+
+  updateWhatsapp: (id: number, data: { name?: string; body?: string }) =>
+    adminApiInstance.put<ApiResponse<WhatsappTemplate>>(`/template/whatsapp/${id}`, data),
+
+  deleteWhatsapp: (id: number) =>
+    adminApiInstance.delete<ApiResponse<void>>(`/template/whatsapp/${id}`),
 };
 
 export const resumeApi = {

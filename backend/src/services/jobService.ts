@@ -27,6 +27,8 @@ export class JobService {
     phone?: string;
     location?: string;
     resumeFileName?: string;
+    emailTemplateId?: number;
+    whatsappTemplateId?: number;
   }) {
     const existing = await this.jobRepository.findByEmail(data.email);
     if (existing) throw new ConflictError('Job with this email already exists');
@@ -44,6 +46,8 @@ export class JobService {
       location?: string;
       notes?: string;
       resumeFileName?: string;
+      emailTemplateId?: number | null;
+      whatsappTemplateId?: number | null;
     }
   ) {
     await this.getById(id);

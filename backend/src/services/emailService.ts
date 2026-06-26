@@ -1,17 +1,17 @@
 import nodemailer from 'nodemailer';
 import path from 'path';
 import fs from 'fs';
-import { TemplateRepository } from '../repositories/templateRepository';
 import { JobRepository } from '../repositories/jobRepository';
+import { TemplateRepository } from '../repositories/templateRepository';
 import { AppError } from '../utils/errors';
 
 export class EmailService {
-  private templateRepository: TemplateRepository;
   private jobRepository: JobRepository;
+  private templateRepository: TemplateRepository;
 
   constructor() {
-    this.templateRepository = new TemplateRepository();
     this.jobRepository = new JobRepository();
+    this.templateRepository = new TemplateRepository();
   }
 
   private getTransporter() {
@@ -30,15 +30,27 @@ export class EmailService {
     const job = await this.jobRepository.findById(jobId);
     if (!job) throw new AppError('Job not found', 404);
 
-    const template = await this.templateRepository.getEmailTemplate();
-    if (!template) throw new AppError('Email template not configured', 400);
+    let subject: string;
+    let body: string;
 
-    const subject = template.subject
+    if (job.emailTemplateId) {
+      const template = await this.templateRepository.getEmailTemplateById(job.emailTemplateId);
+      if (!template) throw new AppError('Selected email template not found', 404);
+      subject = template.subject;
+      body = template.body;
+    } else {
+      const templates = await this.templateRepository.listEmailTemplates();
+      if (templates.length === 0) throw new AppError('No email templates configured. Create one first.', 400);
+      subject = templates[0].subject;
+      body = templates[0].body;
+    }
+
+    subject = subject
       .replace(/\{company\}/g, job.companyName)
       .replace(/\{role\}/g, job.role)
       .replace(/\{hrName\}/g, job.hrName);
 
-    const body = template.body
+    body = body
       .replace(/\{company\}/g, job.companyName)
       .replace(/\{role\}/g, job.role)
       .replace(/\{hrName\}/g, job.hrName);

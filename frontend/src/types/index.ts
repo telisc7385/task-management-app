@@ -61,6 +61,10 @@ export interface Job {
   whatsappStatus: 'Pending' | 'Opened';
   notes: string | null;
   resumeFileName: string | null;
+  emailTemplateId: number | null;
+  whatsappTemplateId: number | null;
+  emailTemplate: EmailTemplate | null;
+  whatsappTemplate: WhatsappTemplate | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -74,6 +78,8 @@ export interface JobFormData {
   location?: string;
   notes?: string;
   resumeFileName?: string;
+  emailTemplateId?: number | null;
+  whatsappTemplateId?: number | null;
 }
 
 export interface JobStats {
@@ -85,12 +91,14 @@ export interface JobStats {
 
 export interface EmailTemplate {
   id?: number;
+  name: string;
   subject: string;
   body: string;
 }
 
 export interface WhatsappTemplate {
   id?: number;
+  name: string;
   body: string;
 }
 
